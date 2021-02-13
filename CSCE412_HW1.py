@@ -63,22 +63,33 @@ def parent_selection(pop, w):
 	return random.choices(pop, weights = w, k = 2)
 
 def lcs(str1, str2, gen_limit):
+	# generate the initial population
 	pop = gen_population(100)
 	
+	fitlim = k
+	
 	for g in range(gen_limit):
+		# data structures for storing population fitness, weights for parent selection, and the next generation
 		pop_fitness = []
 		pop_weights = []
 		new_gen = []
 		
 		for i in pop:
 			val = eval(i, str1, str2)
+			# immediately return solution if its value equals k
+			if val == k:
+				return i
 			pop_fitness.append(val)
-			if val > 0:
-				pop_weights.append(3)
-			elif val < 0:
-				pop_weights.append(2)
-			else:
-				pop_weights.append(1)
+			pop_weights.append(val)
+			
+			# previous approad to adding weights
+#			if val > 0:
+#				pop_weights.append(3)
+#			elif val < 0:
+#				pop_weights.append(2)
+#			else:
+#				pop_weights.append(1)
+		
 				
 		for o in range(len(pop) // 2):
 			parents = parent_selection(pop, pop_weights)
