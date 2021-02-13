@@ -3,6 +3,7 @@ import random
 
 userstr1 = input("Enter the first string: ")
 userstr2 = input("Enter the second string: ")
+gen_limit = input("Enter the number of generations to simulate: ")
 k = len(userstr1)
 ref = userstr1
 
@@ -35,8 +36,75 @@ def eval(cand, str1, str2):
 				# print("miss")
 	return score
 
+def crossover(p1, p2):
+	point = random.randint(0, len(p1) - 1)
+	c1 = p1[0:point] + p2[point:]
+	c2 = p2[0:point] + p2[point:]
+	return c1, c2
+
+def mutation(geno):
+	for g in geno:
+		pm = random.randint(1, len(geno))
+		if pm == 1:
+			if g == "0":
+				g = "1"
+			else:
+				g = "0"
+	return geno
+
+def gen_population(poplen):
+	population = []
+	for i in range(poplen):
+		population.append(gen_string(ref))
+		
+	return population
+
+def parent_selection(pop, w):
+	return random.choices(pop, weights = w, k = 2)
+
+def lcs(str1, str2, gen_limit):
+	pop = gen_population(100)
+	
+	for g in range(gen_limit):
+		pop_fitness = []
+		pop_weights = []
+		new_gen = []
+		
+		for i in pop:
+			val = eval(i, str1, str2)
+			pop_fitness.append(val)
+			if val > 0:
+				pop_weights.append(3)
+			elif val < 0:
+				pop_weights.append(2)
+			else:
+				pop_weights.append(1)
+				
+		for o in range(len(pop) // 2):
+			parents = parent_selection(pop, pop_weights)
+			c1, c2 = crossover(parents[0], parents[1])
+			c1 = mutation(c1)
+			c2 = mutation(c2)
+			new_gen.append(c1)
+			new_gen.append(c2)
+		
+		pop = new_gen
+	
+	fittest = None
+	fit_val = None
+	
+	for i in pop:
+		val = eval(i, str1, str2)
+		if fittest is None or val > fit_val:
+			fittest = i
+			fit_val = val
+	
+	return fittest
 
 if __name__ == "__main__":
-	test_str = gen_string(ref)
-	print(test_str)
-	print(eval(test_str, userstr1, userstr2))
+	geno = lcs(userstr1, userstr2, int(gen_limit))
+	out = ""
+	for i in range(k):
+		if geno[i] == '1':
+			out += ref[i]
+	print(out)
