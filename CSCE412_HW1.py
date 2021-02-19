@@ -11,9 +11,14 @@
 
 import random
 
-userstr1 = input("Enter the first string: ")
-userstr2 = input("Enter the second string: ")
-generation_cap = input("Enter the maximum number of generations")
+MATCH_MULTI = 100
+DIFF_MULTI = -1000
+MAX_MULTI = 10
+POP_SIZE = 100
+
+userstr1 = str.lower(input("Enter the first string: "))
+userstr2 = str.lower(input("Enter the second string: "))
+generation_cap = int(input("Enter the maximum number of generations: "))
 
 short_str = userstr1
 long_str = userstr2
@@ -24,7 +29,7 @@ if len(long_str) < len(short_str):
 
 # This effectively performs a coin flip at each index to determine whether the bit will be set to 1 or 0
 def gen_string(length: int):
-	return random.choices(["0", "1"], k=length)  # Produces a list of randomly selected 1's and 0's of the same length as str
+	return "".join(random.choices(["0", "1"], k=length))  # Produces a list of randomly selected 1's and 0's of the same length as str
 
 
 # Generates a population of genomes (substrings)
@@ -65,7 +70,7 @@ def eval(cand, short_str, long_str):
 	sub_str = ""
 
 	for i, bit in enumerate(cand):  # Produces the substring represented by the candidate binary string
-		if bit:
+		if int(bit):
 			sub_str += short_str[i]
 
 	j = 0
@@ -74,48 +79,54 @@ def eval(cand, short_str, long_str):
 	for char in long_str:  # Searches through the longer of the strings to see if it contains the substring
 		if sub_str[j] == char:
 			j += 1
-		if j == len(sub_str):
+		if j == len(sub_str) - 1:
 			match = True
 			break
 
 	val = len(cand)  # Initial val equals the length of the candidate
 	if match:  # If the candidate matches, it's value is multiplied by 100, else it is negatively multiplied by 1000
-		val *= 100
+		val *= MATCH_MULTI
 	else:
-		val *= -1000
+		val *= DIFF_MULTI
 
 	if len(cand) == len(short_str):  # If the candidate is the length of the shortest string, it gets a bonus
-		val *= 10
+		val *= MAX_MULTI
 
 	return val  # Return the produced value of the candidate
-
 
 # Main lcs function
 def lcs(short_str, long_str, generation_cap):
 
-	# TODO: Calculate fitness limit
+	l = len(short_str)
 
-	# TODO: Generate genome population and their individual fitness
+	fitness_lim = l * MATCH_MULTI * MAX_MULTI
 
-	# TODO: Loop generation_cap times
+	p = gen_population(l, POP_SIZE)
+	pop = [p, [eval(cand, short_str, long_str) for cand in p]]
 
-		# TODO: Sort genomes by fitness
+	for gen in range(generation_cap):
 
-		# TODO: Check if fitness limit has been met (break if so)
+		pop[0], pop[1] = (list(t) for t in zip(*sorted(zip(pop[0], pop[1]))))
 
-		# TODO: Produce next generation
-		#		- select the two best from previous gen
-		#		- loop half population length - 1 times
-		#			- select two parents with selection function
-		#			- apply crossover and mutation functions to the two children generated
-		# 			- append children to the next generation
+		if pop[1][0] >= fitness_lim:
+			break
 
-		# TODO: Population = next generation
+		next_gen = [pop[0][0:2], pop[1][0:2]]
 
-	# TODO: Return best genome
+		for i in range(int(len(pop[0]) / 2) - 1):
 
-	return
+			parents = select_next_gen(pop)
+			a, b = sp_crossover(parents[0], parents[1])
+			a = mutate(a)
+			b = mutate(b)
+			next_gen[0].append([a, b])
+			next_gen[1].append([eval(a, short_str, long_str), eval(b, short_str, long_str)])
+
+		pop = next_gen
+
+	pop[0], pop[1] = (list(t) for t in zip(*sorted(zip(pop[0], pop[1]))))
+	return pop[0][0]
 
 
 if __name__ == "__main__":
-	lcs(short_str, long_str, generation_cap)
+	print(lcs(short_str, long_str, generation_cap))
