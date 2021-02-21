@@ -10,12 +10,6 @@
 #	- http://gpbib.cs.ucl.ac.uk/gecco2006/docs/p609.pdf
 ########################################################################################################################
 
-# TODO:
-#		- Comment
-#		- User input for probabilites
-#		- test driver
-#		- summarize report
-
 import random
 
 MATCH_MULTI = 100
@@ -23,17 +17,12 @@ DIFF_MULTI = -1000
 MAX_MULTI = 10
 POP_SIZE = 100
 
-userstr1 = str.lower(input("Enter the first string: "))
-userstr2 = str.lower(input("Enter the second string: "))
-known_lcs = str.lower(input("Enter the known LCS (or nothing if it is unknown): "))
-generation_cap = int(input("Enter the maximum number of generations: "))
+short_str = "short_str"
+long_str = "long_str"
+known_lcs = "_str"
+generation_cap = 0
 
-short_str = userstr1
-long_str = userstr2
-
-if len(long_str) < len(short_str):
-	short_str, long_str = long_str, short_str
-
+TEST_DRIVER = False
 
 # This effectively performs a coin flip at each index to determine whether the bit will be set to 1 or 0
 def gen_string(length: int):
@@ -106,49 +95,105 @@ def eval(cand, short_str, long_str):
 	return val  # Return the produced value of the candidate
 
 # Main lcs function
-def lcs(short_str, long_str, generation_cap, fitness_lim, prob_mutate=1/len(short_str), num_mutations=1, prob_cross=.95):
+def lcs(short_str, long_str, generation_cap, known_lcs, prob_mutate=1/len(short_str), num_mutations=1, prob_cross=.95):
 
-	p = gen_population(len(short_str), POP_SIZE)
-	pop = [p, [eval(cand, short_str, long_str) for cand in p]]
+	p = gen_population(len(short_str), POP_SIZE)  # Initialize population of candidate strings
+	pop = [p, [eval(cand, short_str, long_str) for cand in p]]  # Pair population with respective fitness levels
 
-	best = ""
-	best_g = 0
-
-	for gen in range(generation_cap):
-
-		pop[1], pop[0] = (list(t) for t in zip(*sorted(zip(pop[1], pop[0]), reverse=True)))
-		if best != pop[0][0]:
-			best = pop[0][0]
-			best_g = gen
-
-		if pop[1][0] >= fitness_lim:
-			break
-
-		next_gen = [pop[0][0:2], pop[1][0:2]]
-
-		for i in range(int(len(pop[0]) / 2) - 1):
-
-			parents = select_next_gen(pop)
-			a, b = sp_crossover(parents[0], parents[1], prob_cross)
-			a = mutate(a, prob_mutate, num_mutations)
-			b = mutate(b, prob_mutate, num_mutations)
-			next_gen[0].extend([a, b])
-			next_gen[1].extend([eval(a, short_str, long_str), eval(b, short_str, long_str)])
-
-		pop = next_gen
-
-	pop[1], pop[0] = (list(t) for t in zip(*sorted(zip(pop[1], pop[0]), reverse=True)))
-	return pop[0][0], best_g+1
-
-def test_driver():
-	return
-
-if __name__ == "__main__":
-	if known_lcs != '':
+	if known_lcs != '':  # If we know the lcs, we can calculate the target fitness limit to stop early
 		fitness_lim = len(known_lcs) * MATCH_MULTI
 		if len(known_lcs) == len(short_str):
 			fitness_lim *= MAX_MULTI
 	else:
-		fitness_lim = len(short_str) * MATCH_MULTI * MAX_MULTI
-	ans, gen = lcs(short_str, long_str, generation_cap, fitness_lim)
-	print(f"The Longest Common Substring of {short_str.upper()} and {long_str.upper()} after {gen} generations is {bits_to_str(ans, short_str).upper()} and is represented by the bitstring {ans}")
+		fitness_lim = len(short_str) * MATCH_MULTI * MAX_MULTI  # Otherwise, stop only when we reach the highest possible fitness limit given k
+
+	best = ""  # Best substring found
+	best_g = 0  # Amount of generations to best substring
+
+	for gen in range(generation_cap):  # Loop for generation cap times
+
+		pop[1], pop[0] = (list(t) for t in zip(*sorted(zip(pop[1], pop[0]), reverse=True)))  # Sort the population based on fitness levels
+		if best != pop[0][0]:  # Update the best current best string as necessary
+			best = pop[0][0]
+			best_g = gen
+
+		if pop[1][0] >= fitness_lim:  # Break if we've reached our fitness limit
+			break
+
+		next_gen = [pop[0][0:2], pop[1][0:2]]  # Start the next generation with the two best strings from the previous
+
+		for i in range(int(len(pop[0]) / 2) - 1):  # Loop through the previous population, generating two children per pair of strings selected (roulette wheel selection)
+
+			parents = select_next_gen(pop)  # Select parents (roulette)
+			a, b = sp_crossover(parents[0], parents[1], prob_cross)  # Crossover
+			a = mutate(a, prob_mutate, num_mutations)  # Mutate first child
+			b = mutate(b, prob_mutate, num_mutations)  # Mutate second child
+			next_gen[0].extend([a, b])  # Add strings to next generation
+			next_gen[1].extend([eval(a, short_str, long_str), eval(b, short_str, long_str)])  # Add fitness levels of new strings
+
+		pop = next_gen  # Replace previous generation with next
+
+	pop[1], pop[0] = (list(t) for t in zip(*sorted(zip(pop[1], pop[0]), reverse=True)))  # Final sort of generation
+
+	if best != pop[0][0]:  # Update the best current best string as necessary
+		best = pop[0][0]
+		best_g = gen
+
+	return pop[0][0], best_g+1
+
+# Test driver for project report
+def test_driver():
+	curr_str = ""
+	strings = []
+	with open("strings.txt", 'r') as f:
+		for line in f:
+			if line[0] != '-':
+				curr_str += line
+			else:
+				strings.append(curr_str)
+				curr_str = ""
+
+	strings = iter(strings)
+	for s in strings:
+
+		short_str = s.lower().strip()
+		long_str = next(strings).lower().strip()
+
+		ave = []
+		ans = []
+
+		if len(long_str) < len(short_str):
+			short_str, long_str = long_str, short_str
+
+		for i in range(10):
+			a, g = lcs(short_str, long_str, 2000, '', num_mutations=1)
+			ans.append(a)
+			ave.append(g)
+
+		best_string = ans[0]
+		for s in ans:
+			if s.count('1') > best_string.count('s'):
+				best_string = s
+
+		print(f"\nThe Longest Common Substring of {short_str.upper()} and {long_str.upper()}"
+			  f"\nafter an average of {sum(ave)/len(ave)} generations per search"
+			  f"\nis {bits_to_str(best_string, short_str).upper()}"
+			  f"\nand is represented by the bitstring {best_string}")
+
+
+# Main method for user interaction
+if __name__ == "__main__":
+
+	if TEST_DRIVER:
+		test_driver()
+	else:
+		short_str = str.lower(input("Enter the first string: "))
+		long_str = str.lower(input("Enter the second string: "))
+		known_lcs = str.lower(input("Enter the known LCS (or nothing if it is unknown): "))
+		generation_cap = int(input("Enter the maximum number of generations: "))
+
+		if len(long_str) < len(short_str):
+			short_str, long_str = long_str, short_str
+
+		ans, gen = lcs(short_str, long_str, generation_cap, known_lcs)
+		print(f"The Longest Common Substring of {short_str.upper()} and {long_str.upper()} after {gen} generations is {bits_to_str(ans, short_str).upper()} and is represented by the bitstring {ans}")
