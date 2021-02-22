@@ -1,3 +1,5 @@
+# Benjamin Good and Sha Jackson
+# bcgood@alaska.edu and shajack2000@gmail.com
 import string
 import random
 
