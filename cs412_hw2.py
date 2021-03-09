@@ -1,8 +1,9 @@
 import random
+from numpy import random as nprand
 
 # Fitness function
-def eval(id):
-	val = 21.5 + id[0] * math.sin(4 * math.pi * id[0]) + id[1] * math.sin(20 * math.pi * id[1])
+def eval(x):
+	val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 	return val
 
 # Produces one child
@@ -15,6 +16,15 @@ def recombination(parent_pool):
 	child = [random.choice([parents[0][i], parents[1][i]]) for i in range(genolen)]
 	
 	return child
+
+
+def mutation(values, sigma):
+	vp = []
+	for v in values:
+		vp.append(v + nprand.normal(0, sigma, 100))
+	
+	return vp
+		
 
 # Global recombination, taking the current population, number of parents(np)
 # and number number of offspring(no) as arguments
