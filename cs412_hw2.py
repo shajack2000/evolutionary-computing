@@ -1,10 +1,15 @@
-import random
+import random, math
 from numpy import random as nprand
 
 # Fitness function
 def eval(x):
 	val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 	return val
+	
+# individual will consist of two x values and the mutation step	
+def init_pool(poolsize):
+	pool = [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), 1]
+	return pool
 
 # Produces one child
 def recombination(parent_pool):
@@ -17,9 +22,17 @@ def recombination(parent_pool):
 	
 	return child
 
+# based on mutation case #1
+def mutstep(sigma):
+	n = 128
+	tao = 1/math.sqrt(n)
+	sigma_p = sigma*math.exp(tao*nprand.normal(0, sigma, 100))
+	return sigma_p
+
 
 def mutation(values, sigma):
 	vp = []
+	sigma = mutstep(sigma)
 	for v in values:
 		vp.append(v + nprand.normal(0, sigma, 100))
 	
@@ -51,4 +64,8 @@ def globalrec(pool, np, no):
 			offspring_pool.append(child)
 	
 	return offspring_pool
+
+def main(poolsize):
+	pool = init_pool(poolsize)
+	
 		
