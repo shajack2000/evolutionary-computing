@@ -106,7 +106,7 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	# Declare a variable to count the number of successful mutations.
 	success = 0
 	
-	for g in generations:
+	for g in range(generations):
 		gen_counter += 1
 		
 		pool = globalrec(pool, sigma, np, no)
@@ -134,3 +134,8 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	best = get_highest_fitness(pool)
 		
 	return best
+
+if __name__ == "__main__":
+	values = main(10, 10000, 10)
+	
+	print(values)
