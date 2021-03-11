@@ -30,7 +30,7 @@ def recombination(parent_pool, sigma):
 def mutstep(sigma):
 	n = 3
 	tao = 1/math.sqrt(2*n)
-	sigma_p = sigma*math.exp(tao*nprand.normal(0, sigma, 100))
+	sigma_p = sigma*math.exp(tao*nprand.normal(0, sigma))
 	return sigma_p
 
 # changes the mutation step
@@ -49,7 +49,7 @@ def mutation(ind):
 	# mutation equation: x' = x + N(0, sigma)
 	sigma = ind[2]
 	for i in range(2):
-		ind[i] = ind[i] + nprand.normal(0, sigma, 100)
+		ind[i] = ind[i] + nprand.normal(0, sigma)
 	# Possible TODO: check to see if fitness is better due to mutation and
 	# revert back to original values it it isn't.
 	
@@ -85,12 +85,15 @@ def globalrec(pool, sigma, np, no):
 # Returns the fittest individual in the pool.
 def get_highest_fitness(pool):
 	best = None
+	best_fitness = 0
 	for ind in pool:
 		fitness = eval(ind)
 		if best is None:
 			best = ind
-		elif fitness > best:
+			best_fitness = fitness
+		elif fitness > best_fitness:
 			best = ind
+			best_fitness = fitness
 	
 	return ind
 
@@ -121,12 +124,13 @@ def main(poolsize, generations, k, np = 3, no = 21):
 				# greater fitness.
 				success += 1
 		
-		if gen_count == k:
+		if gen_counter == k:
 			# Calculate the % of successful mutations.
 			prob_succ = success / (poolsize * k)
 			sigma = adjust_mutstep(sigma, prob_succ, random.uniform(0.8, 1.0))
-			# Reset the success variable for future calculations.
+			# Reset the success and gen_counter variables for future calculations.
 			success = 0
+			gen_counter = 0
 	
 	# Return the fittest individual.
 	
