@@ -12,7 +12,7 @@ def eval(x):
 	
 # An individual will consist of two x values and the mutation step.	
 def init_pool(poolsize):
-	pool = [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), 1]
+	pool = [ [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), 1] for i in range(poolsize)]
 	return pool
 
 # Produces one child
