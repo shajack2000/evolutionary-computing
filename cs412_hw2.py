@@ -1,3 +1,7 @@
+# Benjamin Good and Sha Jackson
+# bcgood@alaska.edu and shajack2000@gmail.com
+# 3/22/2021
+
 import random, math
 from numpy import random as nprand
 
@@ -29,12 +33,25 @@ def mutstep(sigma):
 	sigma_p = sigma*math.exp(tao*nprand.normal(0, sigma, 100))
 	return sigma_p
 
+# changes the mutation step
+def adjust_mutstep(x1, x2, ms, c):
+	# Return the fitness of both values.
+	f1 = eval(x1)
+	f2 = eval(x2)
+	
+	# Adjust the mutation step depending on the differences in fitness.
+	if f1 > f2:
+		ms = ms / c
+	elif f1 < f2:
+		ms = ms * c
+	
+	return ms
 
-def mutation(ind, sigma):
-	sigma = mutstep(sigma)
+
+def mutation(ind):
 	# mutation equation: x' = x + N(0, sigma)
+	sigma = ind[2]
 	for i in range(2):
-		vp.append(v + nprand.normal(0, sigma, 100))
 		ind[i] = ind[i] + nprand.normal(0, sigma, 100)
 	
 	return ind
@@ -66,7 +83,8 @@ def globalrec(pool, np, no):
 	
 	return offspring_pool
 
-def main(poolsize):
+def main(poolsize, generations, k):
 	pool = init_pool(poolsize)
+	
 	
 		
