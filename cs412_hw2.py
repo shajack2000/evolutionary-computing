@@ -83,8 +83,17 @@ def globalrec(pool, sigma, np, no):
 	
 	return offspring_pool
 
+# Returns the fittest individual in the pool.
 def get_highest_fitness(pool):
-	pass
+	best = None
+	for ind in pool:
+		fitness = eval(ind)
+		if best is None:
+			best = ind
+		elif fitness > best:
+			best = ind
+	
+	return ind
 
 def main(poolsize, generations, k, np = 3, no = 21):
 	pool = init_pool(poolsize)
@@ -117,7 +126,7 @@ def main(poolsize, generations, k, np = 3, no = 21):
 			# Calculate the % of successful mutations.
 			prob_succ = success / (poolsize * k)
 			sigma = adjust_mutstep(sigma, prob_succ, random.uniform(0.8, 1.0))
-			# Reset the success variable for future calculations
+			# Reset the success variable for future calculations.
 			success = 0
 	
 	# Return the fittest individual.
