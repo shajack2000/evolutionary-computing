@@ -28,8 +28,8 @@ def recombination(parent_pool):
 
 # based on mutation case #1
 def mutstep(sigma):
-	n = 128
-	tao = 1/math.sqrt(n)
+	n = 3
+	tao = 1/math.sqrt(2*n)
 	sigma_p = sigma*math.exp(tao*nprand.normal(0, sigma, 100))
 	return sigma_p
 
