@@ -23,7 +23,6 @@ def recombination(parent_pool, sigma):
 	genolen = len(parents[0])
 	
 	child = [random.choice([parents[0][i], parents[1][i]]) for i in range(genolen)]
-	child.append(sigma)
 	
 	return child
 
