@@ -10,19 +10,20 @@ def eval(x):
 	val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 	return val
 	
-# individual will consist of two x values and the mutation step	
+# An individual will consist of two x values and the mutation step.	
 def init_pool(poolsize):
 	pool = [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), 1]
 	return pool
 
 # Produces one child
-def recombination(parent_pool):
+def recombination(parent_pool, sigma):
 	# select two parents
 	parents = random.choices(parent_pool, k=2)
 	# get the length of the genotype
 	genolen = len(parents[0])
 	
 	child = [random.choice([parents[0][i], parents[1][i]]) for i in range(genolen)]
+	child.append(sigma)
 	
 	return child
 
@@ -58,11 +59,11 @@ def mutation(ind):
 
 # Global recombination, taking the current population, number of parents(np)
 # and number number of offspring(no) as arguments
-def globalrec(pool, np, no):
+def globalrec(pool, sigma, np, no):
 	offspring_pool = []
 	# This looks very inefficient, but it is a start.
 	for i in range(no):
-		child = recombination(pool)
+		child = recombination(pool, sigma)
 		
 		# Check to see if the length of the population has been exceed
 		# and then check if any individuals currently in the offspring pool
@@ -82,8 +83,45 @@ def globalrec(pool, np, no):
 	
 	return offspring_pool
 
-def main(poolsize, generations, k):
+def get_highest_fitness(pool):
+	pass
+
+def main(poolsize, generations, k, np = 3, no = 21):
 	pool = init_pool(poolsize)
 	
+	# Maintain a count of the generation to check for k iterations.
+	gen_counter = 0
 	
+	sigma = 1
+	
+	# Declare a variable to count the number of successful mutations.
+	success = 0
+	
+	for g in generations:
+		gen_counter += 1
 		
+		pool = globalrec(pool, sigma, np, no)
+		
+		for ind in pool:
+			# Compare the fitness of the original values to the mutated
+			og_fitness = eval(ind)
+			ind = mutation(ind)
+			mut_fitness = eval(ind)
+			
+			if mut_fitness > og_fitness:
+				# Increment the success counter if the mutated values lead to
+				# greater fitness.
+				success += 1
+		
+		if gen_count == k:
+			# Calculate the % of successful mutations.
+			prob_succ = success / (poolsize * k)
+			sigma = adjust_mutstep(sigma, prob_succ, random.uniform(0.8, 1.0))
+			# Reset the success variable for future calculations
+			success = 0
+	
+	# Return the fittest individual.
+	
+	best = get_highest_fitness(pool)
+		
+	return best
