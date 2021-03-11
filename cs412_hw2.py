@@ -30,13 +30,14 @@ def mutstep(sigma):
 	return sigma_p
 
 
-def mutation(values, sigma):
-	vp = []
+def mutation(ind, sigma):
 	sigma = mutstep(sigma)
-	for v in values:
+	# mutation equation: x' = x + N(0, sigma)
+	for i in range(2):
 		vp.append(v + nprand.normal(0, sigma, 100))
+		ind[i] = ind[i] + nprand.normal(0, sigma, 100)
 	
-	return vp
+	return ind
 		
 
 # Global recombination, taking the current population, number of parents(np)
