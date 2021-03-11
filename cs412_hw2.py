@@ -34,18 +34,15 @@ def mutstep(sigma):
 	return sigma_p
 
 # changes the mutation step
-def adjust_mutstep(x1, x2, ms, c):
-	# Return the fitness of both values.
-	f1 = eval(x1)
-	f2 = eval(x2)
+def adjust_mutstep(sigma, prob, c):
 	
 	# Adjust the mutation step depending on the differences in fitness.
-	if f1 > f2:
-		ms = ms / c
-	elif f1 < f2:
-		ms = ms * c
+	if prob > 0.2:
+		sigma = sigma / c
+	elif prob < 0.2:
+		sigma = sigma * c
 	
-	return ms
+	return sigma
 
 
 def mutation(ind):
@@ -53,6 +50,8 @@ def mutation(ind):
 	sigma = ind[2]
 	for i in range(2):
 		ind[i] = ind[i] + nprand.normal(0, sigma, 100)
+	# Possible TODO: check to see if fitness is better due to mutation and
+	# revert back to original values it it isn't.
 	
 	return ind
 		
