@@ -15,24 +15,18 @@ def eval(x):
 	return val
 	
 # An individual will consist of two x values and the mutation step.	
-def init_pool(poolsize, sigma):
-	pool = [ [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), sigma, sigma] for i in range(poolsize)]
+def init_pool(poolsize):
+	pool = [ [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), 1] for i in range(poolsize)]
 	return pool
 
 # Produces one child
-def recombination(parent_pool):	
-	child = []
+def recombination(parent_pool, sigma):
+	# select two parents
+	parents = random.choices(parent_pool, k=2)
+	# get the length of the genotype
+	genolen = len(parents[0])
 	
-	# Index 0 and 1 will contain x values selected via discrete global recombination.
-	for i in range(2):
-		parents = random.choices(parent_pool, k=2)
-		child.append(random.choice(parents[0][i], parents[1][i]))
-	
-	# Index 2 and 3 will contain sigma values seleccted via intermediary global recombination.
-	for i in range(2, 4):
-		parents = random.choices(parent_pool, k=2)
-		avg = (parents[0][i] + parents[1][i]) / 2
-		child.append(avg)
+	child = [random.choice([parents[0][i], parents[1][i]]) for i in range(genolen)]
 	
 	return child
 
@@ -62,20 +56,14 @@ def check_viability(x):
 		return False
 	return True
 
-# based on mutation case #2
 def mutation(ind):
-	# mutation equation: sigma' = sigma * exp(tao' * N(0,1) + tao * N(0, 1))
-	# x' = x + sigma' * N(0, 1)
+	# mutation equation: x' = x + sigma * N(0, sigma')
+	sigma = ind[2]
 	mut_ind = ind
-	n = 3
-	tao = 1/math.sqrt(2*n)
-	tao_p = 1/math.sqrt(2*math.sqrt(n))
-	
+	sigma_prime = mutstep(sigma)
+	mut_ind[2] = sigma_prime
 	for i in range(2):
-		sigma = ind[i+2]
-		sigma_p = sigma * math.exp(tao_p * nprand.normal(0, 1) + tao * nprand.normal(0, 1))
-		mut_ind[i+2] = sigma_p
-		mut_ind[i] = ind[i] + sigma_p * nprand.normal(0, 1)
+		mut_ind[i] = mut_ind[i] + sigma * nprand.normal(0, sigma_prime)
 	
 	if eval(mut_ind) > eval(ind):
 		return mut_ind
@@ -87,7 +75,7 @@ def globalrec(pool, sigma, np, no):
 	offspring_pool = []
 	# This looks very inefficient, but it is a start.
 	for i in range(no):
-		child = recombination(pool)
+		child = recombination(pool, sigma)
 		
 		# Check to see if the length of the population has been exceed
 		# and then check if any individuals currently in the offspring pool
@@ -123,7 +111,7 @@ def get_highest_fitness(pool):
 	return ind
 
 def main(poolsize, generations, k, np = 3, no = 21):
-	pool = init_pool(poolsize, 1)
+	pool = init_pool(poolsize)
 	
 	# Maintain a count of the generation to check for k iterations.
 	gen_counter = 0
