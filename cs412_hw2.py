@@ -140,7 +140,8 @@ def main(poolsize, generations, k, np = 3, no = 21):
 		if gen_counter == k:
 			# Calculate the % of successful mutations.
 			prob_succ = success / (poolsize * k)
-			sigma = adjust_mutstep(sigma, prob_succ, random.uniform(0.8, 1.0))
+			for ind in pool:
+				ind[2] = adjust_mutstep(ind[2], prob_succ, random.uniform(0.8, 1.0))
 			# Reset the success and gen_counter variables for future calculations.
 			success = 0
 			gen_counter = 0
