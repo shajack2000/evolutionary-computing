@@ -8,9 +8,9 @@ from numpy import random as nprand
 # Fitness function
 def eval(x):
 	if x[0] < -3 or x[0] > 12:
-		return -1
+		return -100
 	if x[1] < 4 or x[1] > 6:
-		return -1
+		return -100
 	val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 	return val
 	
@@ -48,18 +48,25 @@ def adjust_mutstep(sigma, prob, c):
 	
 	return sigma
 
+# checks of x values
+def check_viability(x):
+	if x[1] < 4.0 or x[1] > 6.0:
+		return False
+	if x[0] < -3.0 or x[0] > 12.0:
+		return False
+	return True
 
 def mutation(ind):
 	# mutation equation: x' = x + sigma * N(0, sigma')
 	sigma = ind[2]
+	mut_ind = ind
 	sigma_prime = mutstep(sigma)
 	for i in range(2):
-		ind[i] = ind[i] + sigma * nprand.normal(0, sigma_prime)
-	# Possible TODO: check to see if fitness is better due to mutation and
-	# revert back to original values it it isn't.
+		mut_ind[i] = mut_ind[i] + sigma * nprand.normal(0, sigma_prime)
 	
+	if eval(mut_ind) > eval(ind):
+		return mut_ind
 	return ind
-		
 
 # Global recombination, taking the current population, number of parents(np)
 # and number number of offspring(no) as arguments
