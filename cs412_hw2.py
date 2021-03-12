@@ -130,7 +130,7 @@ def get_highest_fitness(pool):
 	
 	return ind
 
-# tries to round all of the values in a chromosome
+# tries to round all of the values in an individual
 def roundind(ind):
 
 	for i in ind:
