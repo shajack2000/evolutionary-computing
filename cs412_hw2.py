@@ -7,9 +7,9 @@ from numpy import random as nprand
 
 # Fitness function
 def eval(x):
-	if x[0] < -3.0 or x[0] > 12.0:
+	if x[0] < -3.0 or x[0] > 12.0 or math.isnan(x[0]) or math.isinf(x[0]):
 		return -100
-	if x[1] < 4.0 or x[1] > 6.0:
+	if x[1] < 4.0 or x[1] > 6.0 or math.isnan(x[0]) or math.isinf(x[0]):
 		return -100
 	val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 	return val
@@ -26,7 +26,7 @@ def recombination(parent_pool):
 	# Index 0 and 1 will contain x values selected via discrete global recombination.
 	for i in range(2):
 		parents = random.choices(parent_pool, k=2)
-		child.append(random.choice(parents[0][i], parents[1][i]))
+		child.append(random.choice([parents[0][i], parents[1][i]]))
 	
 	# Index 2 and 3 will contain sigma values seleccted via intermediary global recombination.
 	for i in range(2, 4):
@@ -67,7 +67,7 @@ def mutation(ind):
 	# mutation equation: sigma' = sigma * exp(tao' * N(0,1) + tao * N'(0, 1))
 	# x' = x + sigma' * N(0, 1)
 	mut_ind = ind
-	n = 3
+	n = 4
 	tao_p = 1/math.sqrt(2*n)
 	tao = 1/math.sqrt(2*math.sqrt(n))
 	global_distr = nprand.normal(0, 1)
@@ -84,7 +84,7 @@ def mutation(ind):
 
 # Global recombination, taking the current population, number of parents(np)
 # and number number of offspring(no) as arguments
-def globalrec(pool, sigma, np, no):
+def globalrec(pool, np, no):
 	offspring_pool = []
 	# This looks very inefficient, but it is a start.
 	for i in range(no):
@@ -103,6 +103,7 @@ def globalrec(pool, sigma, np, no):
 				if eval(ind) < child_fitness:
 					offspring_pool.remove(ind)
 					offspring_pool.append(child)
+					break
 		else:
 			offspring_pool.append(child)
 	
@@ -129,15 +130,13 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	# Maintain a count of the generation to check for k iterations.
 	gen_counter = 0
 	
-	sigma = 1
-	
 	# Declare a variable to count the number of successful mutations.
 	success = 0
 	
 	for g in range(generations):
 		gen_counter += 1
 		
-		pool = globalrec(pool, sigma, np, no)
+		pool = globalrec(pool, np, no)
 		
 		for ind in pool:
 			# Compare the fitness of the original values to the mutated
@@ -155,12 +154,15 @@ def main(poolsize, generations, k, np = 3, no = 21):
 			prob_succ = success / (poolsize * k)
 			for ind in pool:
 				ind[2] = adjust_mutstep(ind[2], prob_succ, random.uniform(0.8, 1.0))
+				ind[3] = adjust_mutstep(ind[3], prob_succ, random.uniform(0.8, 1.0))
 			# Reset the success and gen_counter variables for future calculations.
 			success = 0
 			gen_counter = 0
+		
+		print(get_highest_fitness(pool))
 	
 	# Return the fittest individual.
-	
+	print(pool)
 	best = get_highest_fitness(pool)
 		
 	return best
