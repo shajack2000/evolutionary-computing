@@ -7,9 +7,9 @@ from numpy import random as nprand
 
 # Fitness function
 def eval(x):
-	if x[0] < -3 or x[0] > 12:
+	if x[0] < -3.0 or x[0] > 12.0:
 		return -100
-	if x[1] < 4 or x[1] > 6:
+	if x[1] < 4.0 or x[1] > 6.0:
 		return -100
 	val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 	return val
@@ -61,6 +61,7 @@ def mutation(ind):
 	sigma = ind[2]
 	mut_ind = ind
 	sigma_prime = mutstep(sigma)
+	mut_ind[2] = sigma_prime
 	for i in range(2):
 		mut_ind[i] = mut_ind[i] + sigma * nprand.normal(0, sigma_prime)
 	
