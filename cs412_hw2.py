@@ -6,18 +6,23 @@ import random, math
 from numpy import random as nprand
 import decimal
 
+PI = decimal.Decimal(math.pi)
+
 # Fitness function
 def eval(x):
 	if x[0] < -3.0 or x[0] > 12.0 or math.isnan(x[0]) or math.isinf(x[0]):
 		return -100
 	if x[1] < 4.0 or x[1] > 6.0 or math.isnan(x[1]) or math.isinf(x[1]):
 		return -100
-	val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
+	x1 = decimal.Decimal(x[0])
+	x2 = decimal.Decimal(x[1])
+	val = decimal.Decimal(21.5) + x1 * decimal.Decimal(math.sin(4 * PI * x1)) + x2 * decimal.Decimal(math.sin(20 * PI * x2))
 	return val
 	
 # An individual will consist of two x values and two mutation steps.	
 def init_pool(poolsize, sigma):
-	pool = [ [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), sigma, sigma] for i in range(poolsize)]
+	pool = [ [decimal.Decimal(random.uniform(-3.0, 12.0)), decimal.Decimal(random.uniform(4.0, 6.0)), 
+	decimal.Decimal(sigma), decimal.Decimal(sigma)] for i in range(poolsize)]
 	return pool
 
 # Produces one child
@@ -35,7 +40,7 @@ def recombination(parent_pool):
 		avg = (parents[0][i] + parents[1][i]) / 2
 		child.append(avg)
 	
-	return roundind(child)
+	return child
 
 # based on mutation case #1
 def mutstep(sigma):
@@ -53,7 +58,7 @@ def adjust_mutstep(sigma, prob, c):
 	elif prob < 0.2:
 		sigma = sigma * c
 	
-	return round(sigma, 4)
+	return sigma
 
 # checks of x values
 def check_viability(x):
@@ -75,11 +80,9 @@ def mutation(ind):
 	
 	for i in range(2):
 		sigma = ind[i+2]
-		sigma_p = sigma * math.exp(tao_p * global_distr + tao * nprand.normal(0, 1))
+		sigma_p = sigma * decimal.Decimal(math.exp(tao_p * global_distr + tao * nprand.normal(0, 1)))
 		mut_ind[i+2] = sigma_p
-		mut_ind[i] = ind[i] + sigma_p * nprand.normal(0, 1)
-	
-	mut_ind = roundind(mut_ind)
+		mut_ind[i] = ind[i] + sigma_p * decimal.Decimal(nprand.normal(0, 1))
 	
 	if nanorinf(mut_ind):
 		return ind
@@ -156,6 +159,8 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	# Declare a variable to count the number of successful mutations.
 	success = 0
 	
+	decimal.getcontext().prec = 5
+	
 	for g in range(generations):
 		gen_counter += 1
 		
@@ -176,8 +181,10 @@ def main(poolsize, generations, k, np = 3, no = 21):
 			# Calculate the % of successful mutations.
 			prob_succ = success / (poolsize * k)
 			for ind in pool:
-				ind[2] = adjust_mutstep(ind[2], prob_succ, random.uniform(0.8, 1.0))
-				ind[3] = adjust_mutstep(ind[3], prob_succ, random.uniform(0.8, 1.0))
+				r1 = decimal.Decimal(random.uniform(0.8, 1.0))
+				r2 = decimal.Decimal(random.uniform(0.8, 1.0))
+				ind[2] = adjust_mutstep(ind[2], prob_succ, r1)
+				ind[3] = adjust_mutstep(ind[3], prob_succ, r2)
 			# Reset the success and gen_counter variables for future calculations.
 			success = 0
 			gen_counter = 0
