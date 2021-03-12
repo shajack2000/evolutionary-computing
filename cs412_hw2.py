@@ -4,12 +4,13 @@
 
 import random, math
 from numpy import random as nprand
+import decimal
 
 # Fitness function
 def eval(x):
 	if x[0] < -3.0 or x[0] > 12.0 or math.isnan(x[0]) or math.isinf(x[0]):
 		return -100
-	if x[1] < 4.0 or x[1] > 6.0 or math.isnan(x[0]) or math.isinf(x[0]):
+	if x[1] < 4.0 or x[1] > 6.0 or math.isnan(x[1]) or math.isinf(x[1]):
 		return -100
 	val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 	return val
@@ -34,7 +35,7 @@ def recombination(parent_pool):
 		avg = (parents[0][i] + parents[1][i]) / 2
 		child.append(avg)
 	
-	return child
+	return roundind(child)
 
 # based on mutation case #1
 def mutstep(sigma):
@@ -52,7 +53,7 @@ def adjust_mutstep(sigma, prob, c):
 	elif prob < 0.2:
 		sigma = sigma * c
 	
-	return sigma
+	return round(sigma, 4)
 
 # checks of x values
 def check_viability(x):
@@ -77,6 +78,11 @@ def mutation(ind):
 		sigma_p = sigma * math.exp(tao_p * global_distr + tao * nprand.normal(0, 1))
 		mut_ind[i+2] = sigma_p
 		mut_ind[i] = ind[i] + sigma_p * nprand.normal(0, 1)
+	
+	mut_ind = roundind(mut_ind)
+	
+	if nanorinf(mut_ind):
+		return ind
 	
 	if eval(mut_ind) > eval(ind):
 		return mut_ind
@@ -124,6 +130,23 @@ def get_highest_fitness(pool):
 	
 	return ind
 
+# tries to round all of the values in a chromosome
+def roundind(ind):
+
+	for i in ind:
+		i = round(i, 4)
+	
+	print(ind)
+	return ind
+
+# checks for nan or inf
+def nanorinf(ind):
+	for c in ind:
+		if math.isnan(c) or math.isinf(c):
+			return True
+	
+	return False
+
 def main(poolsize, generations, k, np = 3, no = 21):
 	pool = init_pool(poolsize, 1)
 	
@@ -158,11 +181,9 @@ def main(poolsize, generations, k, np = 3, no = 21):
 			# Reset the success and gen_counter variables for future calculations.
 			success = 0
 			gen_counter = 0
-		
-		print(get_highest_fitness(pool))
 	
 	# Return the fittest individual.
-	print(pool)
+	# print(pool) I was printing the pool to see where the program is going wrong.
 	best = get_highest_fitness(pool)
 		
 	return best
