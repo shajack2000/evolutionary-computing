@@ -14,7 +14,7 @@ def eval(x):
 	val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 	return val
 	
-# An individual will consist of two x values and the mutation step.	
+# An individual will consist of two x values and two mutation steps.	
 def init_pool(poolsize, sigma):
 	pool = [ [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), sigma, sigma] for i in range(poolsize)]
 	return pool
@@ -64,16 +64,17 @@ def check_viability(x):
 
 # based on mutation case #2
 def mutation(ind):
-	# mutation equation: sigma' = sigma * exp(tao' * N(0,1) + tao * N(0, 1))
+	# mutation equation: sigma' = sigma * exp(tao' * N(0,1) + tao * N'(0, 1))
 	# x' = x + sigma' * N(0, 1)
 	mut_ind = ind
 	n = 3
-	tao = 1/math.sqrt(2*n)
-	tao_p = 1/math.sqrt(2*math.sqrt(n))
+	tao_p = 1/math.sqrt(2*n)
+	tao = 1/math.sqrt(2*math.sqrt(n))
+	global_distr = nprand.normal(0, 1)
 	
 	for i in range(2):
 		sigma = ind[i+2]
-		sigma_p = sigma * math.exp(tao_p * nprand.normal(0, 1) + tao * nprand.normal(0, 1))
+		sigma_p = sigma * math.exp(tao_p * global_distr + tao * nprand.normal(0, 1))
 		mut_ind[i+2] = sigma_p
 		mut_ind[i] = ind[i] + sigma_p * nprand.normal(0, 1)
 	
