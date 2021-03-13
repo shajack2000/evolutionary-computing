@@ -13,31 +13,29 @@ def eval(x):
 	viable = True
 	val = 0
 	
-	if x[0].compare(decimal.Decimal(-3)) == -1 or x[0].compare(decimal.Decimal(12)) == 1:
+	if x[0] < -3 or x[0] > 12:
 		viable = False
 		val -= 50
 	# trying to guide x[1] closer to the valid range
-	if x[1].compare(decimal.Decimal(0)) == -1 or x[1].compare(decimal.Decimal(10)) == 1:
+	if x[1] < 0 or x[1] > 10:
 		viable = False
 		val -= 200
-	elif x[1].compare(decimal.Decimal(2)) == -1 or x[1].compare(decimal.Decimal(8)) == 1:
+	elif x[1] < 2 or x[1] > 8:
 		viable = False
 		val -= 100
-	elif x[1].compare(decimal.Decimal(4)) == -1 or x[1].compare(decimal.Decimal(6)) == 1:
+	elif x[1] < 4 or x[1] > 6:
 		viable = False
 		val -= 50
 	if viable:
 		val += 100
-		x1 = decimal.Decimal(x[0])
-		x2 = decimal.Decimal(x[1])
-		val = decimal.Decimal(21.5) + x1 * decimal.Decimal(math.sin(4 * PI * x1)) + x2 * decimal.Decimal(math.sin(20 * PI * x2))
+		val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 		
 	return val
 	
 # An individual will consist of two x values and two mutation steps.	
 def init_pool(poolsize, sigma):
-	pool = [ [decimal.Decimal(random.uniform(-3.0, 12.0)), decimal.Decimal(random.uniform(4.0, 6.0)), 
-	decimal.Decimal(sigma), decimal.Decimal(sigma)] for i in range(poolsize)]
+	pool = [ [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), 
+	sigma, sigma] for i in range(poolsize)]
 	return pool
 
 # Produces one child
@@ -86,7 +84,7 @@ def check_viability(x):
 # based on mutation case #2
 def mutation(ind):
 	# mutation equation: sigma' = sigma * exp(tao' * N(0,1) + tao * N'(0, 1))
-	# x' = x + sigma' * N(0, 1)
+	# x' = x + sigma' * N'(0, 1)
 	mut_ind = ind
 	n = 4
 	tao_p = 1/math.sqrt(2*n)
@@ -95,9 +93,9 @@ def mutation(ind):
 	
 	for i in range(2):
 		sigma = ind[i+2]
-		sigma_p = sigma * decimal.Decimal(math.exp((tao_p * global_distr) + (tao * nprand.normal(0, 1)) ))
+		sigma_p = sigma * math.exp((tao_p * global_distr) + (tao * nprand.normal(0, 1)) )
 		mut_ind[i+2] = sigma_p
-		mut_ind[i] = ind[i] + sigma_p * decimal.Decimal(nprand.normal(0, 1))
+		mut_ind[i] = ind[i] + sigma_p * nprand.normal(0, 1)
 	
 	if nanorinf(mut_ind):
 		return ind
@@ -121,7 +119,7 @@ def get_lowest_fitness(pool):
 	return worst
 
 # Global recombination, taking the current population, number of parents(np)
-# and number number of offspring(no) as arguments
+# and number of offspring(no) as arguments
 def globalrec(pool, np, no):
 	offspring_pool = []
 	# This looks very inefficient, but it is a start.
