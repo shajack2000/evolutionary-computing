@@ -10,13 +10,27 @@ PI = decimal.Decimal(math.pi)
 
 # Fitness function
 def eval(x):
+	viable = True
+	val = 0
 	if x[0] < -3.0 or x[0] > 12.0 or math.isnan(x[0]) or math.isinf(x[0]):
-		return -100
-	if x[1] < 4.0 or x[1] > 6.0 or math.isnan(x[1]) or math.isinf(x[1]):
-		return -100
-	x1 = decimal.Decimal(x[0])
-	x2 = decimal.Decimal(x[1])
-	val = decimal.Decimal(21.5) + x1 * decimal.Decimal(math.sin(4 * PI * x1)) + x2 * decimal.Decimal(math.sin(20 * PI * x2))
+		viable = False
+		val -= 50
+	# trying to guide x[1] closer to the valid range
+	if x[1] < 0 or x[1] > 10 or math.isnan(x[1]) or math.isinf(x[1]):
+		viable = False
+		val -= 50
+	if x[1] < 2 or x[1] > 8:
+		viable = False
+		val -= 30
+	if x[1] < 4 or x[1] > 6:
+		viable = False
+		val -= 10
+	if viable:
+		val += 20
+		x1 = decimal.Decimal(x[0])
+		x2 = decimal.Decimal(x[1])
+		val = decimal.Decimal(21.5) + x1 * decimal.Decimal(math.sin(4 * PI * x1)) + x2 * decimal.Decimal(math.sin(20 * PI * x2))
+		
 	return val
 	
 # An individual will consist of two x values and two mutation steps.	
@@ -91,6 +105,20 @@ def mutation(ind):
 		return mut_ind
 	return ind
 
+def get_lowest_fitness(pool):
+	worst = None
+	worst_fitness = 0
+	for ind in pool:
+		fitness = eval(ind)
+		if worst is None:
+			worst = ind
+			worst_fitness = fitness
+		elif fitness < worst_fitness:
+			worst = ind
+			worst_fitness = fitness
+	
+	return worst
+
 # Global recombination, taking the current population, number of parents(np)
 # and number number of offspring(no) as arguments
 def globalrec(pool, np, no):
@@ -100,19 +128,16 @@ def globalrec(pool, np, no):
 		child = recombination(pool)
 		
 		# Check to see if the length of the population has been exceed
-		# and then check if any individuals currently in the offspring pool
-		# have a lower fitness value than the newly created child,
+		# and then check if the least fit individual currently in the offspring pool
+		# has a lower fitness value than the newly created child,
 		# otherwise just add the child to the offspring pool.
 		
 		if i > np:
 			child_fitness = eval(child)
-			for j in range(len(offspring_pool)):
-				ind = offspring_pool[j]
-				
-				if eval(ind) < child_fitness:
-					offspring_pool.remove(ind)
-					offspring_pool.append(child)
-					break
+			worst = get_lowest_fitness(offspring_pool)
+			if child_fitness > eval(worst):
+				offspring_pool.remove(worst)
+				offspring_pool.append(child)
 		else:
 			offspring_pool.append(child)
 	
@@ -159,6 +184,7 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	# Declare a variable to count the number of successful mutations.
 	success = 0
 	
+	# I had to revise some of the source code using the decimal module.
 	decimal.getcontext().prec = 5
 	
 	for g in range(generations):
