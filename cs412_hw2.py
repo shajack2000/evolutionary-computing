@@ -75,7 +75,7 @@ def adjust_mutstep(sigma, prob, c):
 	
 	return sigma
 
-# checks of x values
+# checks viability of x values
 def check_viability(x):
 	if x[1] < 4.0 or x[1] > 6.0:
 		return False

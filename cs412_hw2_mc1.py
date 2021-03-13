@@ -68,6 +68,20 @@ def mutation(ind):
 	if eval(mut_ind) > eval(ind):
 		return mut_ind
 	return ind
+	
+def get_lowest_fitness(pool):
+	worst = None
+	worst_fitness = None
+	for ind in pool:
+		fitness = eval(ind)
+		if worst is None:
+			worst = ind
+			worst_fitness = fitness
+		elif worst_fitness < fitness:
+			worst = ind
+			worst_fitness = fitness
+	
+	return worst
 
 # Global recombination, taking the current population, number of parents(np)
 # and number number of offspring(no) as arguments
@@ -84,12 +98,10 @@ def globalrec(pool, sigma, np, no):
 		
 		if i > np:
 			child_fitness = eval(child)
-			for j in range(len(offspring_pool)):
-				ind = offspring_pool[j]
-				
-				if eval(ind) < child_fitness:
-					offspring_pool.remove(ind)
-					offspring_pool.append(child)
+			worst = get_lowest_fitness(offspring_pool)
+			if child_fitness > eval(worst):
+				offspring_pool.remove(worst)
+				offspring_pool.append(child)
 		else:
 			offspring_pool.append(child)
 	
