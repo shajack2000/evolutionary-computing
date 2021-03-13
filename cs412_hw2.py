@@ -12,21 +12,21 @@ PI = decimal.Decimal(math.pi)
 def eval(x):
 	viable = True
 	val = 0
-	if x[0] < -3.0 or x[0] > 12.0 or math.isnan(x[0]) or math.isinf(x[0]):
+	if x[0].compare(decimal.Decimal(-3)) == -1 or x[0].compare(decimal.Decimal(12)) == 1:
 		viable = False
 		val -= 50
 	# trying to guide x[1] closer to the valid range
-	if x[1] < 0 or x[1] > 10 or math.isnan(x[1]) or math.isinf(x[1]):
+	if x[1].compare(decimal.Decimal(0)) == -1 or x[1].compare(decimal.Decimal(10)) == 1:
+		viable = False
+		val -= 200
+	if x[1].compare(decimal.Decimal(2)) == -1 or x[1].compare(decimal.Decimal(8)) == 1:
+		viable = False
+		val -= 100
+	if x[1].compare(decimal.Decimal(4)) == -1 or x[1].compare(decimal.Decimal(6)) == 1:
 		viable = False
 		val -= 50
-	if x[1] < 2 or x[1] > 8:
-		viable = False
-		val -= 30
-	if x[1] < 4 or x[1] > 6:
-		viable = False
-		val -= 10
 	if viable:
-		val += 20
+		val += 100
 		x1 = decimal.Decimal(x[0])
 		x2 = decimal.Decimal(x[1])
 		val = decimal.Decimal(21.5) + x1 * decimal.Decimal(math.sin(4 * PI * x1)) + x2 * decimal.Decimal(math.sin(20 * PI * x2))
@@ -188,35 +188,41 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	decimal.getcontext().prec = 5
 	
 	for g in range(generations):
-		gen_counter += 1
+#		gen_counter += 1
 		
 		pool = globalrec(pool, np, no)
 		
+		# Commenting out the 1/5 success part
+		
 		for ind in pool:
 			# Compare the fitness of the original values to the mutated
-			og_fitness = eval(ind)
+#			og_fitness = eval(ind)
 			ind = mutation(ind)
-			mut_fitness = eval(ind)
+#			mut_fitness = eval(ind)
 			
-			if mut_fitness > og_fitness:
-				# Increment the success counter if the mutated values lead to
-				# greater fitness.
-				success += 1
-		
-		if gen_counter == k:
-			# Calculate the % of successful mutations.
-			prob_succ = success / (poolsize * k)
-			for ind in pool:
-				r1 = decimal.Decimal(random.uniform(0.8, 1.0))
-				r2 = decimal.Decimal(random.uniform(0.8, 1.0))
-				ind[2] = adjust_mutstep(ind[2], prob_succ, r1)
-				ind[3] = adjust_mutstep(ind[3], prob_succ, r2)
-			# Reset the success and gen_counter variables for future calculations.
-			success = 0
-			gen_counter = 0
+#			if mut_fitness > og_fitness:
+#				# Increment the success counter if the mutated values lead to
+#				# greater fitness.
+#				success += 1
+
+#		if gen_counter == k:
+#			# Calculate the % of successful mutations.
+#			prob_succ = success / (poolsize * k)
+#			for ind in pool:
+#				r1 = decimal.Decimal(random.uniform(0.8, 1.0))
+#				r2 = decimal.Decimal(random.uniform(0.8, 1.0))
+#				ind[2] = adjust_mutstep(ind[2], prob_succ, r1)
+#				ind[3] = adjust_mutstep(ind[3], prob_succ, r2)
+#			# Reset the success and gen_counter variables for future calculations.
+#			success = 0
+#			gen_counter = 0
 	
 	# Return the fittest individual.
-	# print(pool) I was printing the pool to see where the program is going wrong.
+	# I was printing the pool to see where the program is going wrong.
+	for p in pool:
+		print(p)
+		print(eval(p))
+		print("End of genotype")
 	best = get_highest_fitness(pool)
 		
 	return best
