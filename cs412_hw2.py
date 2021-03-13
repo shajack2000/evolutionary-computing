@@ -12,6 +12,7 @@ PI = decimal.Decimal(math.pi)
 def eval(x):
 	viable = True
 	val = 0
+	
 	if x[0].compare(decimal.Decimal(-3)) == -1 or x[0].compare(decimal.Decimal(12)) == 1:
 		viable = False
 		val -= 50
@@ -19,10 +20,10 @@ def eval(x):
 	if x[1].compare(decimal.Decimal(0)) == -1 or x[1].compare(decimal.Decimal(10)) == 1:
 		viable = False
 		val -= 200
-	if x[1].compare(decimal.Decimal(2)) == -1 or x[1].compare(decimal.Decimal(8)) == 1:
+	elif x[1].compare(decimal.Decimal(2)) == -1 or x[1].compare(decimal.Decimal(8)) == 1:
 		viable = False
 		val -= 100
-	if x[1].compare(decimal.Decimal(4)) == -1 or x[1].compare(decimal.Decimal(6)) == 1:
+	elif x[1].compare(decimal.Decimal(4)) == -1 or x[1].compare(decimal.Decimal(6)) == 1:
 		viable = False
 		val -= 50
 	if viable:
@@ -94,7 +95,7 @@ def mutation(ind):
 	
 	for i in range(2):
 		sigma = ind[i+2]
-		sigma_p = sigma * decimal.Decimal(math.exp(tao_p * global_distr + tao * nprand.normal(0, 1)))
+		sigma_p = sigma * decimal.Decimal(math.exp((tao_p * global_distr) + (tao * nprand.normal(0, 1)) ))
 		mut_ind[i+2] = sigma_p
 		mut_ind[i] = ind[i] + sigma_p * decimal.Decimal(nprand.normal(0, 1))
 	
@@ -221,6 +222,8 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	# I was printing the pool to see where the program is going wrong.
 	for p in pool:
 		print(p)
+		print(p[0])
+		print(p[1])
 		print(eval(p))
 		print("End of genotype")
 	best = get_highest_fitness(pool)

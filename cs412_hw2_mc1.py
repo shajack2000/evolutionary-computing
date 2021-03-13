@@ -147,7 +147,10 @@ def main(poolsize, generations, k, np = 3, no = 21):
 			gen_counter = 0
 	
 	# Return the fittest individual.
-	
+	for p in pool:
+		print(p)
+		print(eval(p))
+		print("End of genotype")
 	best = get_highest_fitness(pool)
 		
 	return best
