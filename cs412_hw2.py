@@ -13,21 +13,16 @@ def eval(x):
 	viable = True
 	val = 0
 	
-	if x[0] < -3 or x[0] > 12:
-		viable = False
+	if x[0] < -3.0 or x[0] > 12.0:
 		val -= 50
 	# trying to guide x[1] closer to the valid range
-	if x[1] < 0 or x[1] > 10:
-		viable = False
+	if x[1] < 0.0 or x[1] > 10.0:
 		val -= 200
-	elif x[1] < 2 or x[1] > 8:
-		viable = False
+	elif x[1] < 2.0 or x[1] > 8.0:
 		val -= 100
-	elif x[1] < 4 or x[1] > 6:
-		viable = False
+	elif x[1] < 4.0 or x[1] > 6.0:
 		val -= 50
-	if viable:
-		val += 100
+	if viable == 0:
 		val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 		
 	return val
@@ -85,8 +80,8 @@ def check_viability(x):
 def mutation(ind):
 	# mutation equation: sigma' = sigma * exp(tao' * N(0,1) + tao * N'(0, 1))
 	# x' = x + sigma' * N'(0, 1)
-	mut_ind = ind
-	n = 4
+	mut_ind = ind.copy()
+	n = 2
 	tao_p = 1/math.sqrt(2*n)
 	tao = 1/math.sqrt(2*math.sqrt(n))
 	global_distr = nprand.normal(0, 1)
@@ -100,6 +95,8 @@ def mutation(ind):
 	if nanorinf(mut_ind):
 		return ind
 	
+#	print("chromosome: {}, mutated chromosome: {}, chromosome fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
+#	print("Break")
 	if eval(mut_ind) > eval(ind):
 		return mut_ind
 	return ind
@@ -218,17 +215,17 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	
 	# Return the fittest individual.
 	# I was printing the pool to see where the program is going wrong.
-	for p in pool:
-		print(p)
-		print(p[0])
-		print(p[1])
-		print(eval(p))
-		print("End of genotype")
+#	for p in pool:
+#		print(p)
+#		print(p[0])
+#		print(p[1])
+#		print(eval(p))
+#		print("End of genotype")
 	best = get_highest_fitness(pool)
 		
 	return best
 
 if __name__ == "__main__":
-	values = main(10, 10000, 10)
+	values = main(10, 1000, 10)
 	
 	print(values)
