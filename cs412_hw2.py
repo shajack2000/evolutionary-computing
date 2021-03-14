@@ -90,13 +90,13 @@ def mutation(ind):
 		mut_ind[i+2] = sigma_p
 		mut_ind[i] = ind[i] + sigma_p * nprand.normal(0, 1)
 	
-	if nanorinf(mut_ind):
-		return ind
+#	if nanorinf(mut_ind):
+#		return ind
 	
 #	print("chromosome: {}, mutated chromosome: {}, chromosome fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
 #	print("Break")
 	if eval(mut_ind) > eval(ind):
-		print("original: {}, mutant: {}, original fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
+#		print("original: {}, mutant: {}, original fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
 		return mut_ind
 	return ind
 
@@ -114,30 +114,45 @@ def get_lowest_fitness(pool):
 	
 	return worst
 
+# returns a pool of the n fittest members in the pool passed to it.
+def pool_selection(pool, size):
+	fit_pool = []
+	for i in range(size):
+		ind = get_highest_fitness(pool)
+		pool.remove(ind)
+		fit_pool.append(ind)
+	
+	return fit_pool
+
 # Global recombination, taking the current population, number of parents(np)
 # and number of offspring(no) as arguments
 def globalrec(pool, np, no):
 	offspring_pool = []
-	# This looks very inefficient, but it is a start.
+	
 	for i in range(no):
 		child = recombination(pool)
+		child = mutation(child)
 		
 		# Check to see if the length of the population has been exceed
 		# and then check if the least fit individual currently in the offspring pool
 		# has a lower fitness value than the newly created child,
 		# otherwise just add the child to the offspring pool.
 		
-		if i > np:
-			child_fitness = eval(child)
-			worst = get_lowest_fitness(offspring_pool)
-			if child_fitness > eval(worst):
-#				print("chromosome removed: {}, chromosome added: {}".format(worst, child))
-				offspring_pool.remove(worst)
-				offspring_pool.append(child)
-		else:
-			offspring_pool.append(child)
+#		if i >= np:
+#			child_fitness = eval(child)
+#			worst = get_lowest_fitness(offspring_pool)
+#			if child_fitness > eval(worst):
+##				print("chromosome removed: {}, chromosome added: {}".format(worst, child))
+#				offspring_pool.remove(worst)
+#				offspring_pool.append(child)
+#		else:
+		
+		# now just append to pool and pass it to another function
+		# that returns a pool of the fittest individuals
+		
+		offspring_pool.append(child)
 	
-	return offspring_pool
+	return pool_selection(offspring_pool, np)
 
 # Returns the fittest individual in the pool.
 def get_highest_fitness(pool):
@@ -183,15 +198,33 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	
 	for g in range(generations):
 #		gen_counter += 1
+
+		if g % 1000 == 0:
+			print(g)
+			for p in pool:
+				print(p)
+				print(p[0])
+				print(p[1])
+				print(eval(p))
+				print("End of genotype")
 		
 		pool = globalrec(pool, np, no)
 		
+		if g % 1000 == 0:
+			print(g)
+			for p in pool:
+				print(p)
+				print(p[0])
+				print(p[1])
+				print(eval(p))
+				print("End of genotype")
+		
 		# Commenting out the 1/5 success part
 		
-		for i in range(len(pool)):
+#		for i in range(len(pool)):
 			# Compare the fitness of the original values to the mutated
 #			og_fitness = eval(ind)
-			pool[i] = mutation(pool[i])
+#			pool[i] = mutation(pool[i])
 #			mut_fitness = eval(ind)
 			
 #			if mut_fitness > og_fitness:
@@ -224,6 +257,6 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	return best
 
 if __name__ == "__main__":
-	values = main(10, 500, 10)
+	values = main(10, 10000, 10)
 	
 	print(values)
