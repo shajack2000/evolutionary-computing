@@ -188,7 +188,6 @@ def nanorinf(ind):
 
 def main(poolsize, generations, k, np = 3, no = 21):
 	pool = init_pool(np, 1)
-	print(poolsize)
 	
 	# Maintain a count of the generation to check for k iterations.
 	gen_counter = 0
@@ -199,25 +198,25 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	for g in range(generations):
 #		gen_counter += 1
 
-		if g % 1000 == 0:
-			print(g)
-			for p in pool:
-				print(p)
-				print(p[0])
-				print(p[1])
-				print(eval(p))
-				print("End of genotype")
+#		if g % 1000 == 0:
+#			print(g)
+#			for p in pool:
+#				print(p)
+#				print(p[0])
+#				print(p[1])
+#				print(eval(p))
+#				print("End of genotype")
 		
 		pool = globalrec(pool, np, no)
 		
-		if g % 1000 == 0:
-			print(g)
-			for p in pool:
-				print(p)
-				print(p[0])
-				print(p[1])
-				print(eval(p))
-				print("End of genotype")
+#		if g % 1000 == 0:
+#			print(g)
+#			for p in pool:
+#				print(p)
+#				print(p[0])
+#				print(p[1])
+#				print(eval(p))
+#				print("End of genotype")
 		
 		# Commenting out the 1/5 success part
 		
@@ -246,12 +245,13 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	
 	# Return the fittest individual.
 	# I was printing the pool to see where the program is going wrong.
-	for p in pool:
-		print(p)
-		print(p[0])
-		print(p[1])
-		print(eval(p))
-		print("End of genotype")
+#	for p in pool:
+#		print(p)
+#		print(p[0])
+#		print(p[1])
+#		print(eval(p))
+#		print("End of genotype")
+
 	best = get_highest_fitness(pool)
 		
 	return best
@@ -260,3 +260,4 @@ if __name__ == "__main__":
 	values = main(10, 10000, 10)
 	
 	print(values)
+	print(eval(values))
