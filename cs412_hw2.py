@@ -4,9 +4,6 @@
 
 import random, math
 from numpy import random as nprand
-import decimal
-
-PI = decimal.Decimal(math.pi)
 
 # Fitness function
 def eval(x):
@@ -22,7 +19,7 @@ def eval(x):
 		val -= 100
 	elif x[1] < 4.0 or x[1] > 6.0:
 		val -= 50
-	if viable == 0:
+	if val == 0:
 		val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 		
 	return val
@@ -31,6 +28,7 @@ def eval(x):
 def init_pool(poolsize, sigma):
 	pool = [ [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), 
 	sigma, sigma] for i in range(poolsize)]
+	print("Initial pool: {}".format(pool))
 	return pool
 
 # Produces one child
@@ -98,6 +96,7 @@ def mutation(ind):
 #	print("chromosome: {}, mutated chromosome: {}, chromosome fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
 #	print("Break")
 	if eval(mut_ind) > eval(ind):
+		print("original: {}, mutant: {}, original fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
 		return mut_ind
 	return ind
 
@@ -132,6 +131,7 @@ def globalrec(pool, np, no):
 			child_fitness = eval(child)
 			worst = get_lowest_fitness(offspring_pool)
 			if child_fitness > eval(worst):
+#				print("chromosome removed: {}, chromosome added: {}".format(worst, child))
 				offspring_pool.remove(worst)
 				offspring_pool.append(child)
 		else:
@@ -172,16 +172,14 @@ def nanorinf(ind):
 	return False
 
 def main(poolsize, generations, k, np = 3, no = 21):
-	pool = init_pool(poolsize, 1)
+	pool = init_pool(np, 1)
+	print(poolsize)
 	
 	# Maintain a count of the generation to check for k iterations.
 	gen_counter = 0
 	
 	# Declare a variable to count the number of successful mutations.
 	success = 0
-	
-	# I had to revise some of the source code using the decimal module.
-	decimal.getcontext().prec = 5
 	
 	for g in range(generations):
 #		gen_counter += 1
@@ -190,10 +188,10 @@ def main(poolsize, generations, k, np = 3, no = 21):
 		
 		# Commenting out the 1/5 success part
 		
-		for ind in pool:
+		for i in range(len(pool)):
 			# Compare the fitness of the original values to the mutated
 #			og_fitness = eval(ind)
-			ind = mutation(ind)
+			pool[i] = mutation(pool[i])
 #			mut_fitness = eval(ind)
 			
 #			if mut_fitness > og_fitness:
@@ -215,17 +213,17 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	
 	# Return the fittest individual.
 	# I was printing the pool to see where the program is going wrong.
-#	for p in pool:
-#		print(p)
-#		print(p[0])
-#		print(p[1])
-#		print(eval(p))
-#		print("End of genotype")
+	for p in pool:
+		print(p)
+		print(p[0])
+		print(p[1])
+		print(eval(p))
+		print("End of genotype")
 	best = get_highest_fitness(pool)
 		
 	return best
 
 if __name__ == "__main__":
-	values = main(10, 1000, 10)
+	values = main(10, 500, 10)
 	
 	print(values)
