@@ -4,40 +4,31 @@
 
 import random, math
 from numpy import random as nprand
-import decimal
-
-PI = decimal.Decimal(math.pi)
 
 # Fitness function
 def eval(x):
 	viable = True
 	val = 0
 	
-	if x[0].compare(decimal.Decimal(-3)) == -1 or x[0].compare(decimal.Decimal(12)) == 1:
-		viable = False
+	if x[0] < -3.0 or x[0] > 12.0:
 		val -= 50
 	# trying to guide x[1] closer to the valid range
-	if x[1].compare(decimal.Decimal(0)) == -1 or x[1].compare(decimal.Decimal(10)) == 1:
-		viable = False
+	if x[1] < 0.0 or x[1] > 10.0:
 		val -= 200
-	elif x[1].compare(decimal.Decimal(2)) == -1 or x[1].compare(decimal.Decimal(8)) == 1:
-		viable = False
+	elif x[1] < 2.0 or x[1] > 8.0:
 		val -= 100
-	elif x[1].compare(decimal.Decimal(4)) == -1 or x[1].compare(decimal.Decimal(6)) == 1:
-		viable = False
+	elif x[1] < 4.0 or x[1] > 6.0:
 		val -= 50
-	if viable:
-		val += 100
-		x1 = decimal.Decimal(x[0])
-		x2 = decimal.Decimal(x[1])
-		val = decimal.Decimal(21.5) + x1 * decimal.Decimal(math.sin(4 * PI * x1)) + x2 * decimal.Decimal(math.sin(20 * PI * x2))
+	if val == 0:
+		val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
 		
 	return val
 	
 # An individual will consist of two x values and two mutation steps.	
 def init_pool(poolsize, sigma):
-	pool = [ [decimal.Decimal(random.uniform(-3.0, 12.0)), decimal.Decimal(random.uniform(4.0, 6.0)), 
-	decimal.Decimal(sigma), decimal.Decimal(sigma)] for i in range(poolsize)]
+	pool = [ [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), 
+	sigma, sigma] for i in range(poolsize)]
+	print("Initial pool: {}".format(pool))
 	return pool
 
 # Produces one child
@@ -86,25 +77,28 @@ def check_viability(x):
 # based on mutation case #2
 def mutation(ind):
 	# mutation equation: sigma' = sigma * exp(tao' * N(0,1) + tao * N'(0, 1))
-	# x' = x + sigma' * N(0, 1)
-	mut_ind = ind
-	n = 4
+	# x' = x + sigma' * N'(0, 1)
+	mut_ind = ind.copy()
+	n = 2
 	tao_p = 1/math.sqrt(2*n)
 	tao = 1/math.sqrt(2*math.sqrt(n))
 	global_distr = nprand.normal(0, 1)
 	
 	for i in range(2):
 		sigma = ind[i+2]
-		sigma_p = sigma * decimal.Decimal(math.exp((tao_p * global_distr) + (tao * nprand.normal(0, 1)) ))
+		sigma_p = sigma * math.exp((tao_p * global_distr) + (tao * nprand.normal(0, 1)) )
 		mut_ind[i+2] = sigma_p
-		mut_ind[i] = ind[i] + sigma_p * decimal.Decimal(nprand.normal(0, 1))
+		mut_ind[i] = ind[i] + sigma_p * nprand.normal(0, 1)
 	
-	if nanorinf(mut_ind):
-		return ind
+#	if nanorinf(mut_ind):
+#		return ind
 	
-	if eval(mut_ind) > eval(ind):
-		return mut_ind
-	return ind
+#	print("chromosome: {}, mutated chromosome: {}, chromosome fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
+#	print("Break")
+#	if eval(mut_ind) > eval(ind):
+##		print("original: {}, mutant: {}, original fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
+#		return mut_ind
+	return mut_ind
 
 def get_lowest_fitness(pool):
 	worst = None
@@ -120,29 +114,45 @@ def get_lowest_fitness(pool):
 	
 	return worst
 
+# returns a pool of the n fittest members in the pool passed to it.
+def pool_selection(pool, size):
+	fit_pool = []
+	for i in range(size):
+		ind = get_highest_fitness(pool)
+		pool.remove(ind)
+		fit_pool.append(ind)
+	
+	return fit_pool
+
 # Global recombination, taking the current population, number of parents(np)
-# and number number of offspring(no) as arguments
+# and number of offspring(no) as arguments
 def globalrec(pool, np, no):
 	offspring_pool = []
-	# This looks very inefficient, but it is a start.
+	
 	for i in range(no):
 		child = recombination(pool)
+		child = mutation(child)
 		
 		# Check to see if the length of the population has been exceed
 		# and then check if the least fit individual currently in the offspring pool
 		# has a lower fitness value than the newly created child,
 		# otherwise just add the child to the offspring pool.
 		
-		if i > np:
-			child_fitness = eval(child)
-			worst = get_lowest_fitness(offspring_pool)
-			if child_fitness > eval(worst):
-				offspring_pool.remove(worst)
-				offspring_pool.append(child)
-		else:
-			offspring_pool.append(child)
+#		if i >= np:
+#			child_fitness = eval(child)
+#			worst = get_lowest_fitness(offspring_pool)
+#			if child_fitness > eval(worst):
+##				print("chromosome removed: {}, chromosome added: {}".format(worst, child))
+#				offspring_pool.remove(worst)
+#				offspring_pool.append(child)
+#		else:
+		
+		# now just append to pool and pass it to another function
+		# that returns a pool of the fittest individuals
+		
+		offspring_pool.append(child)
 	
-	return offspring_pool
+	return pool_selection(offspring_pool, np)
 
 # Returns the fittest individual in the pool.
 def get_highest_fitness(pool):
@@ -157,7 +167,7 @@ def get_highest_fitness(pool):
 			best = ind
 			best_fitness = fitness
 	
-	return ind
+	return best
 
 # tries to round all of the values in an individual
 def roundind(ind):
@@ -177,7 +187,7 @@ def nanorinf(ind):
 	return False
 
 def main(poolsize, generations, k, np = 3, no = 21):
-	pool = init_pool(poolsize, 1)
+	pool = init_pool(np, 1)
 	
 	# Maintain a count of the generation to check for k iterations.
 	gen_counter = 0
@@ -185,20 +195,35 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	# Declare a variable to count the number of successful mutations.
 	success = 0
 	
-	# I had to revise some of the source code using the decimal module.
-	decimal.getcontext().prec = 5
-	
 	for g in range(generations):
 #		gen_counter += 1
+
+#		if g % 1000 == 0:
+#			print(g)
+#			for p in pool:
+#				print(p)
+#				print(p[0])
+#				print(p[1])
+#				print(eval(p))
+#				print("End of genotype")
 		
 		pool = globalrec(pool, np, no)
 		
+#		if g % 1000 == 0:
+#			print(g)
+#			for p in pool:
+#				print(p)
+#				print(p[0])
+#				print(p[1])
+#				print(eval(p))
+#				print("End of genotype")
+		
 		# Commenting out the 1/5 success part
 		
-		for ind in pool:
+#		for i in range(len(pool)):
 			# Compare the fitness of the original values to the mutated
 #			og_fitness = eval(ind)
-			ind = mutation(ind)
+#			pool[i] = mutation(pool[i])
 #			mut_fitness = eval(ind)
 			
 #			if mut_fitness > og_fitness:
@@ -226,6 +251,7 @@ def main(poolsize, generations, k, np = 3, no = 21):
 		print(p[1])
 		print(eval(p))
 		print("End of genotype")
+
 	best = get_highest_fitness(pool)
 		
 	return best
@@ -234,3 +260,4 @@ if __name__ == "__main__":
 	values = main(10, 10000, 10)
 	
 	print(values)
+	print(eval(values))
