@@ -167,7 +167,7 @@ def get_highest_fitness(pool):
 			best = ind
 			best_fitness = fitness
 	
-	return ind
+	return best
 
 # tries to round all of the values in an individual
 def roundind(ind):
@@ -245,12 +245,12 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	
 	# Return the fittest individual.
 	# I was printing the pool to see where the program is going wrong.
-#	for p in pool:
-#		print(p)
-#		print(p[0])
-#		print(p[1])
-#		print(eval(p))
-#		print("End of genotype")
+	for p in pool:
+		print(p)
+		print(p[0])
+		print(p[1])
+		print(eval(p))
+		print("End of genotype")
 
 	best = get_highest_fitness(pool)
 		
