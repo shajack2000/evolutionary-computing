@@ -13,11 +13,11 @@ def eval(x):
 	if x[0] < -3.0 or x[0] > 12.0:
 		val -= 50
 	# trying to guide x[1] closer to the valid range
-	if x[1] < 0.0 or x[1] > 10.0:
-		val -= 200
-	elif x[1] < 2.0 or x[1] > 8.0:
-		val -= 100
-	elif x[1] < 4.0 or x[1] > 6.0:
+#	if x[1] < 0.0 or x[1] > 10.0:
+#		val -= 200
+#	elif x[1] < 2.0 or x[1] > 8.0:
+#		val -= 100
+	if x[1] < 4.0 or x[1] > 6.0:
 		val -= 50
 	if val == 0:
 		val = 21.5 + x[0] * math.sin(4 * math.pi * x[0]) + x[1] * math.sin(20 * math.pi * x[1])
@@ -48,34 +48,8 @@ def recombination(parent_pool):
 	
 	return child
 
-# based on mutation case #1
-def mutstep(sigma):
-	n = 3
-	tao = 1/math.sqrt(2*n)
-	sigma_p = sigma*math.exp(tao*nprand.normal(0, sigma))
-	return sigma_p
-
-# changes the mutation step
-def adjust_mutstep(sigma, prob, c):
-	
-	# Adjust the mutation step depending on the differences in fitness.
-	if prob > 0.2:
-		sigma = sigma / c
-	elif prob < 0.2:
-		sigma = sigma * c
-	
-	return sigma
-
-# checks viability of x values
-def check_viability(x):
-	if x[1] < 4.0 or x[1] > 6.0:
-		return False
-	if x[0] < -3.0 or x[0] > 12.0:
-		return False
-	return True
-
 # based on mutation case #2
-def mutation(ind):
+def mutation(ind, shouldprint = False):
 	# mutation equation: sigma' = sigma * exp(tao' * N(0,1) + tao * N'(0, 1))
 	# x' = x + sigma' * N'(0, 1)
 	mut_ind = ind.copy()
@@ -85,15 +59,16 @@ def mutation(ind):
 	global_distr = nprand.normal(0, 1)
 	
 	for i in range(2):
-		sigma = ind[i+2]
+		sigma = mut_ind[i+2]
 		sigma_p = sigma * math.exp((tao_p * global_distr) + (tao * nprand.normal(0, 1)) )
 		mut_ind[i+2] = sigma_p
-		mut_ind[i] = ind[i] + sigma_p * nprand.normal(0, 1)
+		mut_ind[i] = mut_ind[i] + sigma_p * nprand.normal(0, 1)
 	
 #	if nanorinf(mut_ind):
 #		return ind
 	
-#	print("chromosome: {}, mutated chromosome: {}, chromosome fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
+#	if shouldprint:
+#		print("chromosome: {}, mutated chromosome: {}, chromosome fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
 #	print("Break")
 #	if eval(mut_ind) > eval(ind):
 ##		print("original: {}, mutant: {}, original fitness: {}, mutant fitness: {}".format(ind, mut_ind, eval(ind), eval(mut_ind)))
@@ -126,12 +101,15 @@ def pool_selection(pool, size):
 
 # Global recombination, taking the current population, number of parents(np)
 # and number of offspring(no) as arguments
-def globalrec(pool, np, no):
+def globalrec(pool, np, no, k):
 	offspring_pool = []
 	
 	for i in range(no):
 		child = recombination(pool)
-		child = mutation(child)
+		if k % 2000 == 0:
+			child = mutation(child, True)
+		else:
+			child = mutation(child)
 		
 		# Check to see if the length of the population has been exceed
 		# and then check if the least fit individual currently in the offspring pool
@@ -169,15 +147,6 @@ def get_highest_fitness(pool):
 	
 	return best
 
-# tries to round all of the values in an individual
-def roundind(ind):
-
-	for i in ind:
-		i = round(i, 4)
-	
-	print(ind)
-	return ind
-
 # checks for nan or inf
 def nanorinf(ind):
 	for c in ind:
@@ -196,7 +165,7 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	success = 0
 	
 	for g in range(generations):
-#		gen_counter += 1
+		gen_counter += 1
 
 #		if g % 1000 == 0:
 #			print(g)
@@ -207,7 +176,7 @@ def main(poolsize, generations, k, np = 3, no = 21):
 #				print(eval(p))
 #				print("End of genotype")
 		
-		pool = globalrec(pool, np, no)
+		pool = globalrec(pool, np, no, gen_counter)
 		
 #		if g % 1000 == 0:
 #			print(g)
@@ -254,10 +223,9 @@ def main(poolsize, generations, k, np = 3, no = 21):
 
 	best = get_highest_fitness(pool)
 		
-	return best
+	return (best[0], best[1])
 
 if __name__ == "__main__":
 	values = main(10, 10000, 10)
 	
 	print(values)
-	print(eval(values))
