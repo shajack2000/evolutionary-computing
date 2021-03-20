@@ -28,7 +28,6 @@ def eval(x):
 def init_pool(poolsize, sigma):
 	pool = [ [random.uniform(-3.0, 12.0), random.uniform(4.0, 6.0), 
 	sigma, sigma] for i in range(poolsize)]
-	print("Initial pool: {}".format(pool))
 	return pool
 
 # Produces one child
@@ -49,7 +48,7 @@ def recombination(parent_pool):
 	return child
 
 # based on mutation case #2
-def mutation(ind, shouldprint = False):
+def mutation(ind):
 	# mutation equation: sigma' = sigma * exp(tao' * N(0,1) + tao * N'(0, 1))
 	# x' = x + sigma' * N'(0, 1)
 	mut_ind = ind.copy()
@@ -106,10 +105,8 @@ def globalrec(pool, np, no, k):
 	
 	for i in range(no):
 		child = recombination(pool)
-		if k % 2000 == 0:
-			child = mutation(child, True)
-		else:
-			child = mutation(child)
+		
+		child = mutation(child)
 		
 		# Check to see if the length of the population has been exceed
 		# and then check if the least fit individual currently in the offspring pool
@@ -155,7 +152,7 @@ def nanorinf(ind):
 	
 	return False
 
-def main(poolsize, generations, k, np = 3, no = 21):
+def main(generations, np = 3, no = 21):
 	pool = init_pool(np, 1)
 	
 	# Maintain a count of the generation to check for k iterations.
@@ -214,18 +211,18 @@ def main(poolsize, generations, k, np = 3, no = 21):
 	
 	# Return the fittest individual.
 	# I was printing the pool to see where the program is going wrong.
-	for p in pool:
-		print(p)
-		print(p[0])
-		print(p[1])
-		print(eval(p))
-		print("End of genotype")
+#	for p in pool:
+#		print(p)
+#		print(p[0])
+#		print(p[1])
+#		print(eval(p))
+#		print("End of genotype")
 
 	best = get_highest_fitness(pool)
 		
 	return (best[0], best[1])
 
 if __name__ == "__main__":
-	values = main(10, 10000, 10)
+	values = main(1000)
 	
-	print(values)
+	print("f({}, {}) = {}".format(values[0], values[1], eval(values)))
