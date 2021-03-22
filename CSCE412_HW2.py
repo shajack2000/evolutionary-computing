@@ -151,7 +151,7 @@ def nanorinf(ind):
 
 
 def main(generations, np=NUMBER_PARENTS, no=NUMBER_OFFSPRING):
-    pool = init_pool(np, 1)
+    pool = init_pool(np, MUTATION_STEP_SIZE)
 
     # Maintain a count of the generation to check for k iterations.
     gen_counter = 0
