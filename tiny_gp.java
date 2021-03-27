@@ -6,18 +6,8 @@
  */
 
 import java.util.*;
-import java.awt.BorderLayout;
-import java.awt.Dimension;
-import java.awt.EventQueue;
-import java.awt.Font;
-import java.awt.GridLayout;
-import java.awt.ScrollPane;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.io.*; 
+import java.io.*;
 
-import javax.script.ScriptEngine;
-import javax.script.ScriptEngineManager;
 import javax.swing.*;
 
 
@@ -59,7 +49,7 @@ private JTextArea solutionArea;
   static double avg_len; 
   static final int  
     MAX_LEN = 10000,  
-    POPSIZE = 100000,
+    POPSIZE = 10000,
     DEPTH   = 5,
     GENERATIONS = 100,
     TSIZE = 2;
