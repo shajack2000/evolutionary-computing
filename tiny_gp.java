@@ -33,13 +33,12 @@ private JTextArea solutionArea;
   private List ArrayList;
   static Random rd = new Random();
   static final int 
-    ADD = 110, 
-    SUB = 111, 
-    MUL = 112, 
-    DIV = 113,
-    FSET_START = ADD, 
-    FSET_END = DIV;
-  static double [] x = new double[FSET_START];
+    AND = 110,
+    OR = 111,
+    NOT = 112,
+    FSET_START = AND,
+    FSET_END = NOT;
+  static boolean [] x = new boolean[FSET_START];
   static double minrandom, maxrandom;
   static char [] program;
   static int PC;
@@ -56,25 +55,18 @@ private JTextArea solutionArea;
   public static final double
     PMUT_PER_NODE  = 0.05,
     CROSSOVER_PROB = 0.9;
-  static double [][] targets;
+  static boolean [][] targets;
 
-  double run() { /* Interpreter */
+  boolean run() { /* Interpreter */
     char primitive = program[PC++];
     if ( primitive < FSET_START )
       return(x[primitive]);
     switch ( primitive ) {
-      case ADD : return( run() + run() );
-      case SUB : return( run() - run() );
-      case MUL : return( run() * run() );
-      case DIV : { 
-        double num = run(), den = run();
-        if ( Math.abs( den ) <= 0.001 ) 
-          return( num );
-        else 
-          return( num / den );
-        }
+      case AND : return( run() && run() );
+      case OR : return( run() || run() );
+      case NOT : return( !run() );
       }
-    return( 0.0 ); // should never get here
+    return( false ); // should never get here
   }
           
   int traverse( char [] buffer, int buffercount ) {
@@ -82,10 +74,9 @@ private JTextArea solutionArea;
       return( ++buffercount );
     
     switch(buffer[buffercount]) {
-      case ADD: 
-      case SUB: 
-      case MUL: 
-      case DIV: 
+      case AND:
+      case OR:
+      case NOT:
       return( traverse( buffer, traverse( buffer, ++buffercount ) ) );
       }
     return( 0 ); // should never get here
@@ -114,7 +105,7 @@ private JTextArea solutionArea;
       minrandom =	Double.parseDouble(tokens.nextToken().trim());
       maxrandom =  Double.parseDouble(tokens.nextToken().trim());
       fitnesscases = Integer.parseInt(tokens.nextToken().trim());
-      targets = new double[fitnesscases][varnumber+1];
+      targets = new boolean[fitnesscases][varnumber+1];
       if (varnumber + randomnumber >= FSET_START ) 
         System.out.println("too many variables and constants");
       
@@ -122,7 +113,7 @@ private JTextArea solutionArea;
         line = in.readLine();
         tokens = new StringTokenizer(line);
         for (j = 0; j <= varnumber; j++) {
-          targets[i][j] = Double.parseDouble(tokens.nextToken().trim());
+          targets[i][j] = Boolean.parseBoolean(tokens.nextToken().trim());
       	}
       }
       in.close();
@@ -139,7 +130,8 @@ private JTextArea solutionArea;
 
   double fitness_function( char [] Prog ) {
     int i = 0, len;
-    double result, fit = 0.0;
+    boolean result;
+    double fit = 0.0;
     
     len = traverse( Prog, 0 );
     for (i = 0; i < fitnesscases; i ++ ) {
@@ -148,9 +140,11 @@ private JTextArea solutionArea;
       program = Prog;
       PC = 0;
       result = run();
-      fit += Math.abs( result - targets[i][varnumber]);
+      if (result == targets[i][varnumber]){
+        fit += 1;
       }
-    return(-fit );
+      }
+    return(fit);
   }
 
   int grow( char [] buffer, int pos, int max, int depth ) {
@@ -171,10 +165,9 @@ private JTextArea solutionArea;
     else  {
       prim = (char) (rd.nextInt(FSET_END - FSET_START + 1) + FSET_START);
       switch(prim) {
-      case ADD: 
-      case SUB: 
-      case MUL: 
-      case DIV:
+        case AND:
+        case OR:
+        case NOT:
         buffer[pos] = prim;
 	one_child = grow( buffer, pos+1, max,depth-1);
 	if ( one_child < 0 ) 
@@ -195,21 +188,17 @@ private JTextArea solutionArea;
       return( ++buffercounter );
       }
     switch(buffer[buffercounter]) {
-      case ADD: System.out.print( "(");
+      case AND: System.out.print( "(");
         a1=print_indiv( buffer, ++buffercounter ); 
-        System.out.print( " + "); 
+        System.out.print( " && ");
         break;
-      case SUB: System.out.print( "(");
+      case OR: System.out.print( "(");
         a1=print_indiv( buffer, ++buffercounter ); 
-        System.out.print( " - "); 
+        System.out.print( " || ");
         break;
-      case MUL: System.out.print( "(");
+      case NOT: System.out.print( "(");
         a1=print_indiv( buffer, ++buffercounter ); 
-        System.out.print( " * "); 
-        break;
-      case DIV: System.out.print( "(");
-        a1=print_indiv( buffer, ++buffercounter ); 
-        System.out.print( " / "); 
+        System.out.print( " ! ");
         break;
       }
     a2=print_indiv( buffer, a1 );
@@ -350,10 +339,9 @@ private JTextArea solutionArea;
         parentcopy[mutsite] = (char) rd.nextInt(varnumber+randomnumber);
       else
         switch(parentcopy[mutsite]) {
-      	case ADD: 
-      	case SUB: 
-      	case MUL: 
-      	case DIV:
+          case AND:
+          case OR:
+          case NOT:
            parentcopy[mutsite] = 
               (char) (rd.nextInt(FSET_END - FSET_START + 1)
                      + FSET_START);
@@ -406,7 +394,12 @@ private JTextArea solutionArea;
         rd.setSeed(seed);
     setup_fitness(fname);
     for ( int i = 0; i < FSET_START; i ++ )
-      x[i]= (maxrandom-minrandom)*rd.nextDouble()+minrandom;
+      if (rd.nextDouble() >= 0){
+        x[i] = true;
+      } else {
+        x[i] = false;
+      }
+      // x[i]= (maxrandom-minrandom)*rd.nextDouble()+minrandom;
     pop = create_random_pop(POPSIZE, DEPTH, fitness );
   }
 
@@ -418,7 +411,7 @@ private JTextArea solutionArea;
     print_parms();
     stats( fitness, pop, 0 );
     for ( gen = 1; gen < GENERATIONS; gen ++ ) {
-      if (  fbestpop > -0.02 ) {
+      if (  fbestpop > 15 ) {
          System.out.print("PROBLEM SOLVED\n");              
          invokeDataset();
          try{
