@@ -3,6 +3,11 @@
  *
  * Author:    Riccardo Poli (email: rpoli@essex.ac.uk)
  *
+ * Edited By:     Benjamin Good and Sha Jackson
+ * Email:         bcgood@alaska.edu and shajack2000@gmail.com
+ * Date modified: 3/22/2021
+ * Purpose: Modify tiny_gp to compute a boolean expression that evaluates correctly for a given truth table
+ *
  */
 
 import java.util.*;
@@ -50,7 +55,7 @@ private JTextArea solutionArea;
   static char [] program;
   static int PC;
   static int varnumber, fitnesscases, randomnumber;
-  static double fbestpop = 0.0, favgpop = 0.0, maxscore = 16;
+  static double fbestpop = 0.0, favgpop = 0.0;
   static long seed;
   static double avg_len; 
   static final int  
@@ -83,7 +88,7 @@ private JTextArea solutionArea;
     return( 0.0 ); // should never get her */
       case AND : return( run() && run() );
       case OR : return( run() || run() );
-      case NOT : return( !run() );
+      case NOT : return(false || !run() );
       }
     return( false ); // should never get here
   }
@@ -244,9 +249,12 @@ private JTextArea solutionArea;
         System.out.print( " || ");
         break;
       case NOT: System.out.print( "(");
-        a1=print_indiv( buffer, ++buffercounter ); 
+        //a1=print_indiv( buffer, ++buffercounter );
         System.out.print( " !");
-        break;
+        a1 = print_indiv(buffer, ++buffercounter);
+        System.out.print( ")");
+        return (a1);
+        //break;
       }
     a2=print_indiv( buffer, a1 );
     System.out.print( ")");
@@ -461,7 +469,7 @@ private JTextArea solutionArea;
     stats( fitness, pop, 0 );
     for ( gen = 1; gen < GENERATIONS; gen ++ ) {
       // if ( fbestpop > -0.02 ) {
-      if (  fbestpop >= maxscore ) {
+      if (  fbestpop >= (varnumber*varnumber) ) {
          System.out.print("PROBLEM SOLVED\n");              
          invokeDataset();
          try{
