@@ -1,0 +1,9 @@
+Organism's test environment:
+- represented as matrix
+- An element in the matrix may contain certain attributes, such as whether or not food is available in that location, maybe water or shelter, etc.
+- There probably will be predators and prey, and they will move around the matrix at some specified rate
+- The basic behavior of organisms could be that if there is prey within a certain proximity, the organism will chase it at a rate specified in the genotype
+and the prey will try to run away at a given rate
+- The roles will be reversed for predators and the organism
+- Prey will be killed when it occupies the same element as a predator
+- The goal may be that an organism survives for 100 years, which could be represented as 100 iterations of a loop, for example.
