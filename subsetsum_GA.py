@@ -7,11 +7,9 @@
 ########################################################################################################################
 
 import random
+import os
 
-MATCH_MULTI = 100
-DIFF_MULTI = -1000
-MAX_MULTI = 10
-POP_SIZE = 300
+POP_SIZE = 500
 
 num_list = [1]  # Default
 
@@ -77,7 +75,8 @@ def eval(cand_list, num_list, num_sum):
             cand_sum += num_list[i]
 
     # Fitness = difference between desired sum and candidate sum with added weight towards less elements used
-    val = abs(num_sum - cand_sum) + ((cand_size - 1) * 0.1)
+    # val = abs(num_sum - cand_sum) + ((cand_size - 1) * 0.1)
+    val = abs(num_sum - cand_sum)
 
     return val  # Return the produced value of the candidate
 
@@ -95,13 +94,17 @@ def subsetsum(num_list, num_sum, generation_cap, prob_mutate=1/len(num_list), nu
     for gen in range(generation_cap):  # Loop for generation cap times
 
         pop[1], pop[0] = (list(t) for t in zip(*sorted(zip(pop[1], pop[0]))))  # Sort the population based on fitness levels
-        if best_fit >= pop[1][0]:  # Update the best current best subset as necessary
+        if best_fit > pop[1][0]:  # Update the best current best subset as necessary
             best_subset = pop[0][0]
             best_fit = pop[1][0]
-            best_g = gen
+            best_g = gen+1
+        elif best_fit == pop[1][0] and len(pop[0][0]) < len(best_subset):
+            best_subset = pop[0][0]
+            best_fit = pop[1][0]
+            best_g = gen + 1
 
-        if best_fit == abs(num_sum):  # Break if we've reached our fitness limit
-            break
+        #if best_fit == 0:  # Break if we've reached our fitness limit
+        #    break
 
         next_gen = [pop[0][0:2], pop[1][0:2]]  # Start the next generation with the two best strings from the previous
 
@@ -118,26 +121,60 @@ def subsetsum(num_list, num_sum, generation_cap, prob_mutate=1/len(num_list), nu
 
     pop[1], pop[0] = (list(t) for t in zip(*sorted(zip(pop[1], pop[0]))))  # Final sort of generation
 
-    if best_fit >= pop[1][0]:  # Update the best current best subset as necessary
+    if best_fit > pop[1][0]:  # Update the best current best subset as necessary
         best_subset = pop[0][0]
         best_fit = pop[1][0]
-        best_g = gen
+        best_g = generation_cap
+    elif best_fit == pop[1][0] and len(pop[0][0]) < len(best_subset):
+        best_subset = pop[0][0]
+        best_fit = pop[1][0]
+        best_g = generation_cap
 
-    return translate_candidate(pop[0][0], num_list), best_g+1
+    return translate_candidate(pop[0][0], num_list), best_g
+
+
+def test_driver():
+
+    for filename in os.listdir("Test Data"):
+        if filename.endswith(".txt"):
+
+            num_list = []
+
+            with open("Test Data/" + filename) as file:
+                for line in file:
+                    num_list.append(int(line))
+
+            generation_cap = num_list.pop()
+            num_sum = num_list.pop()
+
+            subset, gens = subsetsum(sorted(num_list), num_sum, generation_cap)
+
+            print(f"The best subset found from {filename} for the sum of {num_sum} was {subset} in {gens} generations.\nThe sum of the subset is {sum(subset)}")
 
 
 if __name__ == "__main__":
 
     print("Welcome to the Subset Sum Solver...\n")
 
+    print("Would you like to run the test driver (if no, you will be prompted to input a subset yourself). Y/N?")
     while True:
-        try:
-            num_list = list(map(int, input("Enter a list of space separated integers: ").split()))
-            num_sum = int(input("Enter a number representing the sum you would like to search for: "))
+        userin = input()
+        if userin.upper() == "Y":
+            test_driver()
             break
-        except():
-            print("Invalid list of numbers given")
+        elif userin.upper() == "N":
+            while True:
+                try:
+                    num_list = list(map(int, input("Enter a list of space separated integers: ").split()))
+                    num_sum = int(input("Enter a number representing the sum you would like to search for: "))
+                    break
+                except():
+                    print("Invalid list of numbers given")
 
-    generation_cap = int(input("Enter the maximum number of generations: "))
+            generation_cap = int(input("Enter the maximum number of generations: "))
 
-    print(subsetsum(num_list, num_sum, generation_cap))
+            print(subsetsum(num_list, num_sum, generation_cap))
+            break
+        else:
+            print("Invalid input given")
+
